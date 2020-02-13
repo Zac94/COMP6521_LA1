@@ -10,6 +10,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -31,6 +32,7 @@ public class TPMMSoperations {
 		File[] fileNames = folder.listFiles();
 		//System.out.println(fileNames.length);
 		int number_line_to_read=(calculateAvailableMemory()-(1024*1024)) /(200);
+		
 		for(File file : fileNames){
        int count=0;
        BufferedReader buff = new BufferedReader(new FileReader(file));
@@ -61,8 +63,9 @@ public class TPMMSoperations {
 			records=null;
 		}
 		
-		System.gc();
-		calculateAvailableMemory();
+		/*
+		 * System.gc(); calculateAvailableMemory();
+		 */
 		
 		//phase2();
 		
@@ -156,28 +159,72 @@ public class TPMMSoperations {
     	}
     }
 	private File generateeSublist(String name, String[] records) throws IOException {
+		//ArrayList<String> tempRecords=new ArrayList<String>();
+	//	tempRecords.add(records[0]);
+		//List<String> record=;
+		
+		ArrayList<String> record= new ArrayList(Arrays.asList(records));
+		records=null;
+		
+	//	String rec=null;
+		
+		int i=0,j=i+1;
+		
+		
+		while(i<record.size())
+			while(j < record.size()) {
+				if(record.get(i).substring(0,8).equalsIgnoreCase(record.get(j).substring(0, 8))){
+	
+				 if(Integer.parseInt(record.get(i).substring(8,12))< Integer.parseInt((record.get(j).substring(8, 12)))){
+				record.set(i, record.get(j));
+				record.remove(j);
+				j--;
+						//	tempRecords.set(i, record.get(j));
+						
+					
+				}else if(Integer.parseInt(record.get(i).substring(8,12))==Integer.parseInt((record.get(j).substring(8, 12)))){
+					if(Integer.parseInt(record.get(i).substring(13,15))<Integer.parseInt((record.get(j).substring(13, 15)))) {
+						record.set(i, record.get(j));
+						record.remove(j);
+						j--;
+						}
+					else if(Integer.parseInt(record.get(i).substring(13,15))==Integer.parseInt((record.get(j).substring(13, 15)))) {
+						if(Integer.parseInt(record.get(i).substring(16,18))<Integer.parseInt((record.get(j).substring(16, 18)))) {
+							record.set(i, record.get(j));
+							record.remove(j);
+							j--;
+							}
+}
+				}
+					j++;	
+			}
+				i++;
+			}
 		File temp = File
                 .createTempFile(name+"run"+runcount, null, new File("src/temp/"));
         OutputStream outputStream = new FileOutputStream(temp);
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream, "UTF-8"));
         	
-        for(int i=0;i<records.length;i++) {
-        writer.write(records[i]);
+        for(int ii=0;ii<record.size();ii++) {
+        writer.write(record.get(ii));
 		writer.newLine();
         }
         writer.close();
         
         outputStream.close();
-   records=null;
+   record=null;
         
         return temp;
-	}
+		}
+		
+		
+	
 
 	private int calculateAvailableMemory() {
 		System.gc();
 	        Runtime runtime = Runtime.getRuntime();
 	        long usedMemory = runtime.totalMemory() - runtime.freeMemory();
-///System.out.println((runtime.maxMemory() - usedMemory));
+System.out.println((runtime.maxMemory() - usedMemory));
 	        return (int) (runtime.maxMemory() - usedMemory);
 	}
 	
