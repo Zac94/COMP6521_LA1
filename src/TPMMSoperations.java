@@ -3,6 +3,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -14,6 +15,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
@@ -30,55 +32,83 @@ public class TPMMSoperations {
 	private void phase1(File folder) throws IOException, ParseException {
 		
 		File[] fileNames = folder.listFiles();
-		//System.out.println(fileNames.length);
-		int number_line_to_read=(calculateAvailableMemory()-(1024*1024)) /(200);
+		int number_line_to_read=(calculateAvailableMemory()-(1024*1024)) /(2*200);
 		
+		int file_lines=0;
+		for(File file : fileNames) {
+			
+			 BufferedReader buff1 = new BufferedReader(new FileReader(file));
+		       while (buff1.readLine() != null) {
+		    	   file_lines++;
+		    	   }
+		       buff1.close();
+		}
+		
+		if(file_lines<number_line_to_read) {
+			number_line_to_read=file_lines;
+		}
+		
+		  int count=0;
+		  String tuple=null;
+		  String[] records = null;
+		  String filName=null;
 		for(File file : fileNames){
-       int count=0;
-       BufferedReader buff = new BufferedReader(new FileReader(file));
-       String tuple=null;
-			//System.out.println(number_line_to_read);
-			String[] records = null;
+     
+           BufferedReader buff = new BufferedReader(new FileReader(file));
+      
+			
 			tuple = buff.readLine();
-			while ( tuple!= null) {
+			while ( tuple!= null  || (count>=number_line_to_read)) {
+				
 				if (count>=number_line_to_read) {
-	              
+				
 	                	count=0;
 	                	generateSublist(file.getName().substring(0, 2),records);
 	                	records= new String[number_line_to_read];
 	                }
-				  if (!tuple.isEmpty()) {
+				  if (!(tuple==null)) {
 		                
 					  if(count==0) {
 						  records= new String[number_line_to_read];
 					  }
 					  records[count]=tuple;
+					  count=count+1;
 					//  System.out.println(tuple);
 		                }
-				  count=count+1;
+				 filName=file.getName();
 				  tuple = buff.readLine();
        
 		}
+			
 			buff.close();
-			records=null;
+			
+		}
+		if(records.length>0) {
+			ArrayList<String> j=new ArrayList<String>();
+			for(int i=0;records[i]!=null;i++) {
+				j.add(records[i]);
+			}
+			generateSublist(filName.substring(0, 2),j.toArray(new String[j.size()]));
 		}
 		
+		
+		records=null;
 		/*
 		 * System.gc(); calculateAvailableMemory();
 		 */
 		
-		//phase2();
+		phase2(file_lines);
 		
 	}
 	
 	private File generateSublist(String name, String[] records1) throws IOException {
-
+		///System.out.println("phase1 tuple generatelist");
 		
-		   File temp = File
+		   File temp =  File
 	                .createTempFile(name+"run"+runcount, null, new File("src/temp/"));
 	        OutputStream outputStream = new FileOutputStream(temp);
 	        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream, "UTF-8"));
-	        	
+	        //calculateAvailableMemory();
 	        Arrays.sort(records1, new Comparator<String>(){	 
 	            @Override
 	            public int compare(String o1, String o2) {
@@ -96,7 +126,7 @@ public class TPMMSoperations {
 	        return temp;
 	}
 	
-    public void phase2()
+    public void phase2(int file_lines)
             throws IOException, ParseException {
    
     	File folder=  new File("src/temp/");
@@ -108,19 +138,50 @@ public class TPMMSoperations {
     		File[] fileNames = folder.listFiles();
     		int count = 0;
         	boolean flag=false;
-    		System.gc();
-    		int number_line_to_read=Math.abs((calculateAvailableMemory()-((1024*1024))) / (fileNames.length));
+    	//	System.gc();
+    		int number_line_to_read=Math.abs((calculateAvailableMemory()-((1024*1024)))/(2*200));
     		
-    		System.out.println(calculateAvailableMemory());
+    		
+    		for(File file : fileNames) {
+    			
+   			 BufferedReader buff1 = new BufferedReader(new FileReader(file));
+   		       while (buff1.readLine() != null) {
+   		    	   file_lines++;
+   		    	   }
+   		       buff1.close();
+   		}
+   		
+   		if(file_lines<number_line_to_read) {
+   			ArrayList<String> j=new ArrayList<String>();
+    		for(File file : fileNames) {
+    			
+      			 BufferedReader buff1 = new BufferedReader(new FileReader(file));
+      			 String line=buff1.readLine();
+      		       while (line != null) {
+      		    	   j.add(line);
+      		    	   line=buff1.readLine();
+      		    	   }
+      		       buff1.close();
+      		}
+    		generateeSublist("output",j.toArray(new String[j.size()]));
+    		for (File file : fileNames) {
+        		if(!file.getName().contains("output")) {
+                file.delete();
+        		}
+   		}
+    		break;
+   		}
+    		//System.out.println(calculateAvailableMemory());
         	int tmpcount=0;
         	String[] records = new String[number_line_to_read];
     		String tmp="run"+runcount;
+    		 String filName=null;
     	for(File file : fileNames) {
     		if(file.getName().contains(tmp))	{
     		BufferedReader br = new BufferedReader(new FileReader(file.getAbsolutePath()));
     		String tuple = br.readLine();
     	
-    		while(tuple != null) {
+    		while ( tuple!= null  || (count>=number_line_to_read)) {
     			if (count>=number_line_to_read) {
   	              
     				if(!flag) {
@@ -134,86 +195,95 @@ public class TPMMSoperations {
                 	 
                 	 tmpcount=tmpcount+1;
                 }
-			  if (!tuple.isEmpty()) {
+			  if (!(tuple==null)) {
 	              				  
 			records[count]=tuple;
-	                }
-			  count=count+1;
+			 count=count+1;
+			 filName=file.getName();
 			  tuple = br.readLine();
+	                }
+			 
     		}
     		
     		br.close();
     	}
     	}
+    	if(records.length>0) {
+			ArrayList<String> j=new ArrayList<String>();
+			for(int i=0;records[i]!=null;i++) {
+				j.add(records[i]);
+			}
+			generateeSublist(filName.substring(0, 2),j.toArray(new String[j.size()]));
+		}
     	for (File file : fileNames) {
     		if(file.getName().contains("run"+oldRun)) {
             file.delete();
     		}
         }
-    	
-    	if((fileNames.length==1)) {
-    	
+    	records=null;
+    	File[] fileNames1 = folder.listFiles();
+    	if((fileNames1.length<=2)) {
+    		ArrayList<String> j=new ArrayList<String>();
+    		for(File file : fileNames1) {
+    			
+      			 BufferedReader buff1 = new BufferedReader(new FileReader(file));
+      			 String line=buff1.readLine();
+      		       while (line != null) {
+      		    	   j.add(line);
+      		    	   line=buff1.readLine();
+      		    	   }
+      		       buff1.close();
+      		}
+    		generateeSublist("output",j.toArray(new String[j.size()]));
+    		for (File file : fileNames1) {
+        		if(!file.getName().contains("output")) {
+                file.delete();
+        		}
+            }
     	break;
     	}
+    	
   //  	System.out.println(tmpcount);
     	}
     }
-	private File generateeSublist(String name, String[] records) throws IOException {
+	private File generateeSublist(String name, String[] records) throws IOException, ParseException {
 		//ArrayList<String> tempRecords=new ArrayList<String>();
 	//	tempRecords.add(records[0]);
 		//List<String> record=;
-		
-		ArrayList<String> record= new ArrayList(Arrays.asList(records));
-		records=null;
-		
-	//	String rec=null;
-		
-		int i=0,j=i+1;
-		
-		
-		while(i<record.size())
-			while(j < record.size()) {
-				if(record.get(i).substring(0,8).equalsIgnoreCase(record.get(j).substring(0, 8))){
-	
-				 if(Integer.parseInt(record.get(i).substring(8,12))< Integer.parseInt((record.get(j).substring(8, 12)))){
-				record.set(i, record.get(j));
-				record.remove(j);
-				j--;
-						//	tempRecords.set(i, record.get(j));
-						
-					
-				}else if(Integer.parseInt(record.get(i).substring(8,12))==Integer.parseInt((record.get(j).substring(8, 12)))){
-					if(Integer.parseInt(record.get(i).substring(13,15))<Integer.parseInt((record.get(j).substring(13, 15)))) {
-						record.set(i, record.get(j));
-						record.remove(j);
-						j--;
-						}
-					else if(Integer.parseInt(record.get(i).substring(13,15))==Integer.parseInt((record.get(j).substring(13, 15)))) {
-						if(Integer.parseInt(record.get(i).substring(16,18))<Integer.parseInt((record.get(j).substring(16, 18)))) {
-							record.set(i, record.get(j));
-							record.remove(j);
-							j--;
-							}
-}
+		TreeMap<String, String> tuples = new TreeMap<>();
+		String dateFormat = "yyyy-MM-dd";
+		SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
+	//	System.gc();
+		for(int i=0;i<records.length;i++) {
+				if(!tuples.containsKey(records[i].substring(0, 8))) {
+					tuples.put(records[i].substring(0, 8), records[i]);
+				}else {
+					Date dateNew = sdf.parse(records[i].substring(8, 18));
+					Date dateOld = sdf.parse(tuples.get(records[i].substring(0, 8)).substring(8, 18));
+					if(dateNew.after(dateOld)) {
+						tuples.put(records[i].substring(0, 8), records[i]);
+					}
 				}
-					j++;	
-			}
-				i++;
-			}
+			
+		}	
+			
+			
+				
+			
 		File temp = File
                 .createTempFile(name+"run"+runcount, null, new File("src/temp/"));
         OutputStream outputStream = new FileOutputStream(temp);
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream, "UTF-8"));
         	
-        for(int ii=0;ii<record.size();ii++) {
-        writer.write(record.get(ii));
-		writer.newLine();
+        for(Map.Entry<String, String> e : tuples.entrySet()) {
+        	writer.write(e.getValue());
+			writer.newLine();
         }
         writer.close();
         
         outputStream.close();
-   record=null;
-        
+   records=null;
+        tuples.clear();
         return temp;
 		}
 		
@@ -224,7 +294,7 @@ public class TPMMSoperations {
 		System.gc();
 	        Runtime runtime = Runtime.getRuntime();
 	        long usedMemory = runtime.totalMemory() - runtime.freeMemory();
-System.out.println((runtime.maxMemory() - usedMemory));
+///System.out.println((runtime.maxMemory() - usedMemory));
 	        return (int) (runtime.maxMemory() - usedMemory);
 	}
 	
