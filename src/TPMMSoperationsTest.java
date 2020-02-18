@@ -11,7 +11,7 @@ class TPMMSoperationsTest {
 	@Test
 	public void testAvailableMemoryMethod() {
 		TPMMSoperations operation=new TPMMSoperations();
-		int memory=operation.calculateAvailableMemory();
+		long memory=operation.calculateAvailableMemory();
 		assertNotEquals(5, memory);
 		
 		
