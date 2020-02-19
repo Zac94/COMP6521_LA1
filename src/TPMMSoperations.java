@@ -125,6 +125,7 @@ public class TPMMSoperations {
 		double startTime = (double) System.currentTimeMillis();
 		File folder = new File("src/temp/");
 		int sublistCount=0;
+		int ioCount=0;
 		for (File file : folder.listFiles()) {
 			sublistCount=sublistCount+1;
 		}
@@ -185,6 +186,7 @@ public class TPMMSoperations {
 								runcount = runcount + 1;
 							}
 							count = 0;
+							ioCount=ioCount+1;
 							generateeSublist(file.getName().substring(0, 2), records);
 							records = new String[number_line_to_read];
 
@@ -208,6 +210,7 @@ public class TPMMSoperations {
 				for (int i = 0; records[i] != null; i++) {
 					j.add(records[i]);
 				}
+				ioCount=ioCount+1;
 				generateeSublist(filName.substring(0, 2), j.toArray(new String[j.size()]));
 			}
 			for (File file : fileNames) {
@@ -229,6 +232,7 @@ public class TPMMSoperations {
 					}
 					buff1.close();
 				}
+				ioCount=ioCount+1;
 				generateeSublist("output", j.toArray(new String[j.size()]));
 				for (File file : fileNames1) {
 					if (!file.getName().contains("output")) {
@@ -242,6 +246,7 @@ public class TPMMSoperations {
 		}
 		double endTime = (double) System.currentTimeMillis();
 		System.out.println("Processing time of Phase 2:" + (endTime - startTime) / 1000);
+		//System.out.println(ioCount);
 		
 	}
 
