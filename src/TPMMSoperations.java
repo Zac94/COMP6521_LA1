@@ -27,7 +27,7 @@ public class TPMMSoperations {
 	private void phase1(File folder) throws IOException, ParseException {
 		double startTime = (double) System.currentTimeMillis();
 		File[] fileNames = folder.listFiles();
-		int number_line_to_read = (calculateAvailableMemory() - (1024 * 1024)) / (2 * 200);
+		int number_line_to_read = (calculateAvailableMemory()) / (2 * 200);
 
 		int file_lines = 0;
 		for (File file : fileNames) {
@@ -136,7 +136,7 @@ public class TPMMSoperations {
 			int count = 0;
 			boolean flag = false;
 			System.gc();
-			int number_line_to_read = Math.abs((calculateAvailableMemory() - (2*(1024 * 1024))) / (2 * 200));
+			int number_line_to_read = Math.abs((calculateAvailableMemory() - ((1024 * 1024))) / (2 * 200));
 
 			for (File file : fileNames) {
 
@@ -246,7 +246,7 @@ public class TPMMSoperations {
 		}
 		double endTime = (double) System.currentTimeMillis();
 		System.out.println("Processing time of Phase 2:" + (endTime - startTime) / 1000);
-		//System.out.println(ioCount);
+		System.out.println("No.of io:"+(ioCount+(2*sublistCount)));
 		
 	}
 
